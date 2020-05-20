@@ -42,7 +42,6 @@ public final class CmdList
 	public final IpCmd ipCmd = new IpCmd();
 	public final JumpCmd jumpCmd = new JumpCmd();
 	public final LeaveCmd leaveCmd = new LeaveCmd();
-	public final MassMsgCmd massMsgCmd = new MassMsgCmd();
 	public final ModifyCmd modifyCmd = new ModifyCmd();
 	public final PathCmd pathCmd = new PathCmd();
 	public final PotionCmd potionCmd = new PotionCmd();
