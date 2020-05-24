@@ -129,33 +129,33 @@ public final class ListCmd extends Command implements PacketInputListener
 		if(event.getPacket() instanceof CommandSuggestionsS2CPacket) 
 		{
 			CommandSuggestionsS2CPacket packet = (CommandSuggestionsS2CPacket)event.getPacket();
-            event.cancel();
-            List<String> players = new ArrayList<>();
-            for(Suggestion sug : packet.getSuggestions().getList()) 
-            	players.add(sug.getText());
-            if(!isSearch)
-            {
-            	StringBuilder builder = new StringBuilder("Online Players (" + players.size() + "): ");
-            	players.forEach(player -> builder.append(player).append(", "));
-            	if(players.size() > 0 && !builder.toString().equals(""))
-            		ChatUtils.message(builder.toString().substring(0, builder.toString().length() - 2)); 
-            	else
-            		ChatUtils.message("Cannot find any players!");
-            }else if(searchQuery != null)
-            {
-            	List<String> matching = new ArrayList<>();
-            	for(String playerName : players)
-            		if(playerName.contains(searchQuery))
-            			matching.add(playerName);
-            	StringBuilder builder = new StringBuilder("Matching Queries (" + matching.size() + "): ");
-    			matching.forEach(player -> builder.append(player).append(", "));
-    			if(matching.size() > 0 && !builder.toString().equals(""))
-    				 ChatUtils.message(builder.toString().substring(0, builder.toString().length() - 2)); 
-    			 else
-    				 ChatUtils.message("Cannot find any players matching the query.");
-            	searchQuery = null;
-            }
-            EVENTS.remove(PacketInputListener.class, this);
+			event.cancel();
+			List<String> players = new ArrayList<>();
+			for(Suggestion sug : packet.getSuggestions().getList()) 
+				players.add(sug.getText());
+			if(!isSearch)
+			{
+				StringBuilder builder = new StringBuilder("Online Players (" + players.size() + "): ");
+				players.forEach(player -> builder.append(player).append(", "));
+				if(players.size() > 0 && !builder.toString().equals(""))
+					ChatUtils.message(builder.toString().substring(0, builder.toString().length() - 2)); 
+				else
+					ChatUtils.message("Cannot find any players!");
+			}else if(searchQuery != null)
+			{
+				List<String> matching = new ArrayList<>();
+				for(String playerName : players)
+					if(playerName.contains(searchQuery))
+						matching.add(playerName);
+				StringBuilder builder = new StringBuilder("Matching Queries (" + matching.size() + "): ");
+				matching.forEach(player -> builder.append(player).append(", "));
+				if(matching.size() > 0 && !builder.toString().equals(""))
+					ChatUtils.message(builder.toString().substring(0, builder.toString().length() - 2)); 
+				else
+					ChatUtils.message("Cannot find any players matching the query.");
+				searchQuery = null;
+			}
+			EVENTS.remove(PacketInputListener.class, this);
 		}
 		if(timer >= 20000)
 		{
