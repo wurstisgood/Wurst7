@@ -19,7 +19,7 @@ public final class PlaceSlotCmd extends Command
 {
 	public PlaceSlotCmd()
 	{
-		super("placeslot", "Duplicates items in your hand in a specified armor slot.\n"
+		super("placeslot", "Duplicates items from your hand to a specified armor slot.\n"
 			+ "Requires creative mode.",
 			"(head|chest|legs|feet)");
 	}
