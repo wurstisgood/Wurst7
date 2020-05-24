@@ -62,41 +62,41 @@ public final class PluginsCmd extends Command implements PacketInputListener
 		if(event.getPacket() instanceof CommandSuggestionsS2CPacket) 
 		{
 			CommandSuggestionsS2CPacket packet = (CommandSuggestionsS2CPacket)event.getPacket();
-            event.cancel();
-            List<String> plugins = new ArrayList<>();
-            for (Suggestion sug : packet.getSuggestions().getList()) 
-            {
-                String[] arguments = sug.getText().split(":");
-                if(arguments.length > 1 && !arguments[0].substring(1).equals("") && 
-                	!plugins.contains(arguments[0].substring(1)))
-                    plugins.add(arguments[0].substring(1));
-            }
-            plugins = plugins.stream()
-                .filter(plugin -> !plugin.equalsIgnoreCase("minecraft"))
-                .filter(plugin -> !plugin.equalsIgnoreCase("bukkit")).collect(Collectors.toList());
-            if(!isSearch)
-            {
-            	StringBuilder builder = new StringBuilder("Plugins (" + plugins.size() + "): ");
-            	plugins.forEach(plugin -> builder.append(plugin).append(", "));
-            	if(plugins.size() > 0 && !builder.toString().equals(""))
-            		ChatUtils.message(builder.toString().substring(0, builder.toString().length() - 2)); 
-            	else
-            		ChatUtils.message("Cannot find any plugins!");
-            }else if(searchQuery != null)
-            {
-            	List<String> matching = new ArrayList<>();
-            	for(String pluginName : plugins)
-            		if(pluginName.contains(searchQuery))
-            			matching.add(pluginName);
-            	StringBuilder builder = new StringBuilder("Matching Queries (" + matching.size() + "): ");
-    			matching.forEach(plugin -> builder.append(plugin).append(", "));
-    			if(matching.size() > 0 && !builder.toString().equals(""))
-    				 ChatUtils.message(builder.toString().substring(0, builder.toString().length() - 2)); 
-    			 else
-    				 ChatUtils.message("Cannot find any plugins matching the query.");
-            	searchQuery = null;
-            }
-            EVENTS.remove(PacketInputListener.class, this);
+			event.cancel();
+			List<String> plugins = new ArrayList<>();
+			for(Suggestion sug : packet.getSuggestions().getList()) 
+			{
+				String[] arguments = sug.getText().split(":");
+				if(arguments.length > 1 && !arguments[0].substring(1).equals("") && 
+					!plugins.contains(arguments[0].substring(1)))
+					plugins.add(arguments[0].substring(1));
+			}
+			plugins = plugins.stream()
+				.filter(plugin -> !plugin.equalsIgnoreCase("minecraft"))
+				.filter(plugin -> !plugin.equalsIgnoreCase("bukkit")).collect(Collectors.toList());
+			if(!isSearch)
+			{
+				StringBuilder builder = new StringBuilder("Plugins (" + plugins.size() + "): ");
+				plugins.forEach(plugin -> builder.append(plugin).append(", "));
+				if(plugins.size() > 0 && !builder.toString().equals(""))
+					ChatUtils.message(builder.toString().substring(0, builder.toString().length() - 2)); 
+				else
+					ChatUtils.message("Cannot find any plugins!");
+			}else if(searchQuery != null)
+			{
+				List<String> matching = new ArrayList<>();
+				for(String pluginName : plugins)
+					if(pluginName.contains(searchQuery))
+						matching.add(pluginName);
+				StringBuilder builder = new StringBuilder("Matching Queries (" + matching.size() + "): ");
+				matching.forEach(plugin -> builder.append(plugin).append(", "));
+				if(matching.size() > 0 && !builder.toString().equals(""))
+					ChatUtils.message(builder.toString().substring(0, builder.toString().length() - 2)); 
+				else
+					ChatUtils.message("Cannot find any plugins matching the query.");
+				searchQuery = null;
+			}
+			EVENTS.remove(PacketInputListener.class, this);
 		}
 		if(timer >= 20000)
 		{
