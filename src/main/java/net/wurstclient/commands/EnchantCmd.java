@@ -30,7 +30,7 @@ public final class EnchantCmd extends Command
 		if(!MC.player.abilities.creativeMode)
 			throw new CmdError("Creative mode only.");
 		
-		if(args[0].equalsIgnoreCase("clear") && args.length == 1) 
+		if(args.length == 1 && args[0].equalsIgnoreCase("clear")) 
 		{
 			ItemStack currentItem = MC.player.inventory.getMainHandStack();
 			if(currentItem.isEmpty())
@@ -38,13 +38,15 @@ public final class EnchantCmd extends Command
 			
 			CompoundTag tag = currentItem.getTag();
 			
-			if(tag != null && tag.contains("ench")) 
+			if(tag != null && tag.contains("Enchantments")) 
 			{
-				tag.remove("ench");
+				tag.remove("Enchantments");
 				MC.player.networkHandler.sendPacket(
 					new CreativeInventoryActionC2SPacket(
 						36 + MC.player.inventory.selectedSlot, currentItem));
+				ChatUtils.message("Enchantments cleared.");
 			}
+			return;
 		}
 		
 		boolean allItems;
@@ -60,54 +62,55 @@ public final class EnchantCmd extends Command
 			enchantAll = true;
 			level = Byte.MAX_VALUE;
 			max = false;
-		}
-		
-		if(args.length != 3)
-			throw new CmdSyntaxError();
-		
-		if(args[0].equalsIgnoreCase("allitems"))
-			allItems = true;
-		else if(args[0].equals("hand"))
-			allItems = false;
-		else
-			throw new CmdSyntaxError();
-		
-		if(args[1].equalsIgnoreCase("all"))
-		{
-			enchantAll = true;
-			enchant = null;
 		}else
 		{
-			enchantAll = false;
-			try
+			if(args.length != 3)
+				throw new CmdSyntaxError();
+			
+			if(args[0].equalsIgnoreCase("allitems"))
+				allItems = true;
+			else if(args[0].equals("hand"))
+				allItems = false;
+			else
+				throw new CmdSyntaxError();
+			
+			if(args[1].equalsIgnoreCase("all"))
 			{
-				enchant = getEnchantmentFromString(args[1]);
-			}catch(InvalidIdentifierException e)
+				enchantAll = true;
+				enchant = null;
+			}else
 			{
-				throw new CmdSyntaxError("Enchantment name is invaild.");
-			}
-			if(enchant == null)
-			{
-				if(MathUtils.isInteger(args[1]))
-					throw new CmdSyntaxError("Enchantment ID is invaild.");
-				else
+				enchantAll = false;
+				try
+				{
+					enchant = getEnchantmentFromString(args[1]);
+				}catch(InvalidIdentifierException e)
+				{
 					throw new CmdSyntaxError("Enchantment name is invaild.");
+				}
+				if(enchant == null)
+				{
+					if(MathUtils.isInteger(args[1]))
+						throw new CmdSyntaxError("Enchantment ID is invaild.");
+					else
+						throw new CmdSyntaxError("Enchantment name is invaild.");
+				}
 			}
+			
+			if(args[2].equalsIgnoreCase("max"))
+			{
+				max = true;
+				level = 0;
+			}else if(MathUtils.isInteger(args[2]))
+			{
+				if(Integer.valueOf(args[2]) < Short.MIN_VALUE || Integer.valueOf(args[2]) > Short.MAX_VALUE)
+					throw new CmdError("Enchantments cannot be higher than " + Short.MAX_VALUE + " or less than " +
+						Short.MIN_VALUE + ".");
+				max = false;
+				level = Integer.parseInt(args[2]);
+			}else
+				throw new CmdSyntaxError();
 		}
-		
-		if(args[2].equalsIgnoreCase("max"))
-		{
-			max = true;
-			level = 0;
-		}else if(MathUtils.isInteger(args[2]))
-		{
-			if(Integer.valueOf(args[2]) < Short.MIN_VALUE || Integer.valueOf(args[2]) > Short.MAX_VALUE)
-				throw new CmdError("Enchantments cannot be higher than " + Short.MAX_VALUE + " or less than " +
-					Short.MIN_VALUE + ".");
-			max = false;
-			level = Integer.parseInt(args[2]);
-		}else
-			throw new CmdSyntaxError();
 		
 		if(allItems)
 		{
