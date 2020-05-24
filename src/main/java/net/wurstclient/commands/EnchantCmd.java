@@ -3,12 +3,18 @@ package net.wurstclient.commands;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.InvalidIdentifierException;
 import net.minecraft.util.registry.Registry;
 import net.wurstclient.command.CmdError;
 import net.wurstclient.command.CmdException;
 import net.wurstclient.command.CmdSyntaxError;
 import net.wurstclient.command.Command;
 import net.wurstclient.util.ChatUtils;
+import net.wurstclient.util.MathUtils;
 
 public final class EnchantCmd extends Command
 {
@@ -24,43 +30,150 @@ public final class EnchantCmd extends Command
 		if(!MC.player.abilities.creativeMode)
 			throw new CmdError("Creative mode only.");
 		
-		if(args.length > 1)
+		if(args[0].equalsIgnoreCase("clear") && args.length == 1) 
+		{
+			ItemStack currentItem = MC.player.inventory.getMainHandStack();
+			if(currentItem.isEmpty())
+				throw new CmdError("There is no item in your hand.");
+			
+			CompoundTag tag = currentItem.getTag();
+			
+			if(tag != null && tag.contains("ench")) 
+			{
+				tag.remove("ench");
+				MC.player.networkHandler.sendPacket(
+					new CreativeInventoryActionC2SPacket(
+						36 + MC.player.inventory.selectedSlot, currentItem));
+			}
+		}
+		
+		boolean allItems;
+		Enchantment enchant;
+		boolean enchantAll;
+		int level;
+		boolean max;
+		
+		if(args.length == 0 || (args.length == 1 && args[0].equals("all")))
+		{
+			allItems = args.length == 1;
+			enchant = null;
+			enchantAll = true;
+			level = Byte.MAX_VALUE;
+			max = false;
+		}
+		
+		if(args.length != 3)
 			throw new CmdSyntaxError();
 		
-		ItemStack stack = getHeldItem();
-		enchant(stack);
+		if(args[0].equalsIgnoreCase("allitems"))
+			allItems = true;
+		else if(args[0].equals("hand"))
+			allItems = false;
+		else
+			throw new CmdSyntaxError();
 		
-		ChatUtils.message("Item enchanted.");
-	}
-	
-	private ItemStack getHeldItem() throws CmdError
-	{
-		ItemStack stack = MC.player.inventory.getMainHandStack();
-		
-		if(stack.isEmpty())
-			throw new CmdError("There is no item in your hand.");
-		
-		return stack;
-	}
-	
-	private void enchant(ItemStack stack)
-	{
-		for(Enchantment enchantment : Registry.ENCHANTMENT)
+		if(args[1].equalsIgnoreCase("all"))
 		{
-			if(enchantment == Enchantments.SILK_TOUCH)
-				continue;
-			
-			if(enchantment.isCursed())
-				continue;
-			
-			if(enchantment == Enchantments.QUICK_CHARGE)
+			enchantAll = true;
+			enchant = null;
+		}else
+		{
+			enchantAll = false;
+			try
 			{
-				stack.addEnchantment(enchantment, 5);
-				continue;
+				enchant = getEnchantmentFromString(args[1]);
+			}catch(InvalidIdentifierException e)
+			{
+				throw new CmdSyntaxError("Enchantment name is invaild.");
 			}
-			
-			stack.addEnchantment(enchantment, 127);
+			if(enchant == null)
+			{
+				if(MathUtils.isInteger(args[1]))
+					throw new CmdSyntaxError("Enchantment ID is invaild.");
+				else
+					throw new CmdSyntaxError("Enchantment name is invaild.");
+			}
 		}
+		
+		if(args[2].equalsIgnoreCase("max"))
+		{
+			max = true;
+			level = 0;
+		}else if(MathUtils.isInteger(args[2]))
+		{
+			if(Integer.valueOf(args[2]) < Short.MIN_VALUE || Integer.valueOf(args[2]) > Short.MAX_VALUE)
+				throw new CmdError("Enchantments cannot be higher than " + Short.MAX_VALUE + " or less than " +
+					Short.MIN_VALUE + ".");
+			max = false;
+			level = Integer.parseInt(args[2]);
+		}else
+			throw new CmdSyntaxError();
+		
+		if(allItems)
+		{
+			for(int i = 0; i < 41; i++)
+			{	
+				ItemStack item =
+					MC.player.inventory.getInvStack(i);
+				if(item.isEmpty())
+					continue;
+				enchant(item, enchant, enchantAll, level, max);
+				MC.player.networkHandler.sendPacket(
+					new CreativeInventoryActionC2SPacket(i, item));
+			}
+			ChatUtils.message("All items enchanted.");
+		}else
+		{
+			ItemStack currentItem = MC.player.inventory.getMainHandStack();
+			if(currentItem.isEmpty())
+				throw new CmdError("There is no item in your hand.");
+			enchant(currentItem, enchant, enchantAll, level, max);
+			MC.player.networkHandler.sendPacket(
+				new CreativeInventoryActionC2SPacket(
+					36 + MC.player.inventory.selectedSlot, currentItem));
+			ChatUtils.message("Item enchanted.");
+		}
+	}
+	
+	private Enchantment getEnchantmentFromString(String string)
+	{
+		if(MathUtils.isInteger(string))
+			return Enchantment.byRawId(Integer.parseInt(string));
+		else
+			return Registry.ENCHANTMENT.get(new Identifier(string));
+	}
+	
+	private void enchant(ItemStack stack, Enchantment enchant, boolean enchantAll, int level, boolean max)
+	{
+		if(enchantAll)
+			for(Enchantment ench : Registry.ENCHANTMENT)
+			{
+				if(ench == Enchantments.SILK_TOUCH)
+					continue;
+				
+				if(ench.isCursed())
+					continue;
+				
+				if(ench == Enchantments.QUICK_CHARGE && !max && level > 5)
+					addEnchantmentShort(stack, ench, (short)5);
+				else
+					addEnchantmentShort(stack, ench, (short)(max ? enchant.getMaximumLevel() : level));
+			}
+		else
+			addEnchantmentShort(stack, enchant, (short)(max ? enchant.getMaximumLevel() : level));
+	}
+	
+	public void addEnchantmentShort(ItemStack stack, Enchantment enchantment, short level)
+	{
+		stack.getOrCreateTag();
+		if(!stack.getTag().contains("Enchantments", 9))
+			stack.getTag().put("Enchantments", new ListTag());
+		
+		ListTag listTag = stack.getTag().getList("Enchantments", 10);
+		CompoundTag compoundTag = new CompoundTag();
+		compoundTag.putString("id", String.valueOf(Registry.ENCHANTMENT.getId(enchantment)));
+		compoundTag.putShort("lvl", level);
+		listTag.add(compoundTag);
 	}
 	
 	@Override
