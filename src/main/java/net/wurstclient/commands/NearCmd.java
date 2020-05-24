@@ -24,9 +24,9 @@ public final class NearCmd extends Command
 	public NearCmd()
 	{
 		super("near",
-			"Gets a list of the players in your area, you can\n"
+			"Gets a list of the players in your area. You can\n"
 				+ "choose the order (e.g. closest means that closest players come first).\n"
-				+ "Note that this only checks players the client is notified about.",
+				+ "Note that this only displays players the client is notified about.",
 				"[closest|farthest]");
 	}
 
