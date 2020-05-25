@@ -23,9 +23,9 @@ import net.wurstclient.util.ChatUtils;
 
 public final class PluginsCmd extends Command implements PacketInputListener
 {
-	private int timer;
 	private boolean isSearch;
 	private String searchQuery;
+	private long time;
 	
 	public PluginsCmd()
 	{
@@ -38,27 +38,25 @@ public final class PluginsCmd extends Command implements PacketInputListener
 	@Override
 	public void call(String[] args) throws CmdException
 	{
-		if(args.length == 0)
+		if(args.length == 0 || (args.length == 2 && args[0].equalsIgnoreCase("search")))
 		{
-			timer = 0;
-			isSearch = false;
+			time = System.currentTimeMillis();
+			if(args.length == 0)
+				isSearch = false;
+			else
+			{
+				isSearch = true;
+				searchQuery = args[1];
+			}
 			MC.player.networkHandler.sendPacket(new RequestCommandCompletionsC2SPacket(0, "/"));
 			EVENTS.add(PacketInputListener.class, this);
-		}else if(args.length == 2 && args[0].equalsIgnoreCase("search"))
-		{
-			timer = 0;
-			isSearch = true;
-			searchQuery = args[1];
-			MC.player.networkHandler.sendPacket(new RequestCommandCompletionsC2SPacket(0, "/"));
-			EVENTS.add(PacketInputListener.class, this);
-		}else
+		}
 			throw new CmdSyntaxError();
 	}
 	
 	@Override
 	public void onReceivedPacket(PacketInputEvent event)
 	{
-		timer += 50;
 		if(event.getPacket() instanceof CommandSuggestionsS2CPacket) 
 		{
 			CommandSuggestionsS2CPacket packet = (CommandSuggestionsS2CPacket)event.getPacket();
@@ -98,7 +96,7 @@ public final class PluginsCmd extends Command implements PacketInputListener
 			}
 			EVENTS.remove(PacketInputListener.class, this);
 		}
-		if(timer >= 20000)
+		if(System.currentTimeMillis() >= time + 20000)
 		{
 			ChatUtils.message("Server did not respond to TabComplete request.");
 			EVENTS.remove(PacketInputListener.class, this);
