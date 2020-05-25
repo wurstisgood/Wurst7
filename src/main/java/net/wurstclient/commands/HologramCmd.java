@@ -108,7 +108,7 @@ public final class HologramCmd extends Command implements PacketOutputListener
 					text += args[i] + " ";
 				text = text.substring(0, text.length() - 1);
 				text = text.replace("$", "\u00a7").replace("\u00a7\u00a7", "$");
-				compound.putString("CustomName", text);
+				compound.putString("CustomName", LiteralText.Serializer.toJson(new LiteralText(text)));
 				compound.put("Pos", pos);
 				stack.putSubTag("EntityTag", compound);
 				stack.setCustomName(new LiteralText("\u00a74Hologram"));
@@ -209,7 +209,7 @@ public final class HologramCmd extends Command implements PacketOutputListener
 					throw new CmdError(
 						"An error occured while trying to convert the URL into a color code!");
 				}
-				compound.putString("CustomName", colorCodes[index]);
+				compound.putString("CustomName", LiteralText.Serializer.toJson(new LiteralText(colorCodes[index])));
 				stack.putSubTag("EntityTag", compound);
 				stack.setCustomName(new LiteralText("\u00a74Hologram - "
 					+ (colorCodes.length - index) + " Stands Left to Place!"));
@@ -268,7 +268,7 @@ public final class HologramCmd extends Command implements PacketOutputListener
 			compound.putBoolean("NoGravity", true);
 			compound.putBoolean("CustomNameVisible", true);
 			compound.put("Pos", pos);
-			compound.putString("CustomName", colorCodes[index]);
+			compound.putString("CustomName", LiteralText.Serializer.toJson(new LiteralText(colorCodes[index])));
 			stack.putSubTag("EntityTag", compound);
 			stack.setCustomName(new LiteralText("\u00a74Hologram - "
 				+ (colorCodes.length - 1 - index) + " Stands Left to Place!"));
