@@ -38,6 +38,7 @@ public final class CmdList
 	public final GmCmd gmCmd = new GmCmd();
 	public final GoToCmd goToCmd = new GoToCmd();
 	public final HelpCmd helpCmd = new HelpCmd();
+	public final HologramCmd hologramCmd = new HologramCmd();
 	public final InvseeCmd invseeCmd = new InvseeCmd();
 	public final IpCmd ipCmd = new IpCmd();
 	public final JumpCmd jumpCmd = new JumpCmd();
