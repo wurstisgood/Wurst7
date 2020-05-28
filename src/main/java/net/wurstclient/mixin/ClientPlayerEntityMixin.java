@@ -74,6 +74,15 @@ public class ClientPlayerEntityMixin extends AbstractClientPlayerEntity
 		ci.cancel();
 	}
 	
+	@Inject(at = @At("HEAD"),
+		method = "swingHand(Lnet/minecraft/util/Hand;)V",
+		cancellable = true)
+	private void onSwingHand(String message, CallbackInfo ci)
+	{
+		if(WurstClient.INSTANCE.getHax().noSwingHack.isEnabled())
+			ci.cancel();
+	}
+	
 	@Inject(at = @At(value = "INVOKE",
 		target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;tick()V",
 		ordinal = 0), method = "tick()V")
