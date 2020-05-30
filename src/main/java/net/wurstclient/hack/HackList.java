@@ -146,6 +146,7 @@ public final class HackList implements UpdateListener
 	public final TimerHack timerHack = new TimerHack();
 	public final TiredHack tiredHack = new TiredHack();
 	public final TooManyHaxHack tooManyHaxHack = new TooManyHaxHack();
+	public final TowerHack towerHack = new TowerHack();
 	public final TpAuraHack tpAuraHack = new TpAuraHack();
 	public final TrajectoriesHack trajectoriesHack = new TrajectoriesHack();
 	public final TriggerBotHack triggerBotHack = new TriggerBotHack();
