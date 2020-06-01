@@ -50,7 +50,7 @@ public final class PluginsCmd extends Command implements PacketInputListener
 			}
 			MC.player.networkHandler.sendPacket(new RequestCommandCompletionsC2SPacket(0, "/"));
 			EVENTS.add(PacketInputListener.class, this);
-		}
+		}else
 			throw new CmdSyntaxError();
 	}
 	
@@ -65,9 +65,9 @@ public final class PluginsCmd extends Command implements PacketInputListener
 			for(Suggestion sug : packet.getSuggestions().getList()) 
 			{
 				String[] arguments = sug.getText().split(":");
-				if(arguments.length > 1 && !arguments[0].substring(1).equals("") && 
-					!plugins.contains(arguments[0].substring(1)))
-					plugins.add(arguments[0].substring(1));
+				if(arguments.length > 1 && !arguments[0].equals("") && 
+					!plugins.contains(arguments[0]))
+					plugins.add(arguments[0]);
 			}
 			plugins = plugins.stream()
 				.filter(plugin -> !plugin.equalsIgnoreCase("minecraft"))
