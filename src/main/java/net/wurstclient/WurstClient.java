@@ -8,10 +8,12 @@
 package net.wurstclient;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,8 +48,10 @@ import net.wurstclient.mixinterface.IMinecraftClient;
 import net.wurstclient.navigator.Navigator;
 import net.wurstclient.other_feature.OtfList;
 import net.wurstclient.other_feature.OtherFeature;
+import net.wurstclient.other_features.DisableOtf.Mode;
 import net.wurstclient.settings.SettingsFile;
 import net.wurstclient.update.WurstUpdater;
+import net.wurstclient.util.ChatUtils;
 import net.wurstclient.util.json.JsonException;
 
 public enum WurstClient
@@ -77,6 +81,8 @@ public enum WurstClient
 	private FriendsList friends;
 	
 	private boolean enabled = true;
+	private String enableCode = null;
+	
 	private static boolean guiInitialized;
 	private WurstUpdater updater;
 	private Path wurstFolder;
@@ -332,8 +338,43 @@ public enum WurstClient
 		{
 			hax.panicHack.setEnabled(true);
 			hax.panicHack.onUpdate();
-		}
+			
+			if(otfs.disableOtf.getMode() == Mode.CODE)
+ 				generateCode();
+		}else
+			hax.onUpdate();
 	}
+	
+ 	private void generateCode()
+ 	{
+ 		SecureRandom random = new SecureRandom();
+		enableCode = "." + new BigInteger(50, random).toString(16);
+		MC.keyboard.setClipboard(enableCode);
+	    ChatUtils.message("To enable Wurst again, type this code: \u00a7l" + enableCode);
+	    ChatUtils.message("The code has been copied to your clipboard.");	    
+	    ChatUtils.message("The chat will be cleared after 10 seconds.");
+	    new Thread(() -> {
+	    	try
+			{
+				Thread.sleep(10000);
+			}catch(InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+	    	MC.inGameHud.getChatHud().clear(true);
+	    }).start();
+ 	}
+ 	
+ 	public boolean checkCode(String message)
+ 	{
+ 		if(!enabled && message.equals(enableCode))
+ 		{
+ 			setEnabled(true);
+ 			enableCode = null;
+ 			return true;
+ 		}
+ 		return false;
+ 	}
 	
 	public WurstUpdater getUpdater()
 	{

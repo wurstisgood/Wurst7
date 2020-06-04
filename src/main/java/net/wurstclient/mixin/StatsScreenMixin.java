@@ -20,6 +20,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.text.Text;
 import net.wurstclient.WurstClient;
+import net.wurstclient.other_features.DisableOtf.Mode;
 
 @Mixin(StatsScreen.class)
 public abstract class StatsScreenMixin extends Screen implements StatsListener
@@ -54,6 +55,26 @@ public abstract class StatsScreenMixin extends Screen implements StatsListener
 		wurst.setEnabled(!wurst.isEnabled());
 		
 		updateWurstButtonText(button);
+		
+		if(!wurst.isEnabled())
+		{
+			if(wurst.getOtfs().disableOtf.getMode() == Mode.CODE)
+			{
+				button.setMessage("Code to re-enable copied!");
+				button.active = false;
+				new Thread(() -> {
+					try
+					{
+						Thread.sleep(3000);
+					}catch(InterruptedException e)
+					{
+						e.printStackTrace();
+					}
+					button.visible = false;
+				}).start();
+			}else
+				button.visible = wurst.getOtfs().disableOtf.getMode() == Mode.BUTTON;
+		}
 	}
 	
 	private void updateWurstButtonText(ButtonWidget button)

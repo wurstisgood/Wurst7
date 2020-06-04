@@ -84,7 +84,7 @@ public abstract class Hack extends Feature
 		else
 			onDisable();
 		
-		if(stateSaved)
+		if(stateSaved  && WURST.isEnabled())
 			WURST.getHax().saveEnabledHax();
 	}
 	

@@ -56,6 +56,11 @@ public class ClientPlayerEntityMixin extends AbstractClientPlayerEntity
 		cancellable = true)
 	private void onSendChatMessage(String message, CallbackInfo ci)
 	{
+		if(WurstClient.INSTANCE.checkCode(message))
+		{
+			ci.cancel();
+			return;
+		}
 		ChatOutputEvent event = new ChatOutputEvent(message);
 		WurstClient.INSTANCE.getEventManager().fire(event);
 		
