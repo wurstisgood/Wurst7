@@ -17,6 +17,7 @@ import net.wurstclient.Category;
 import net.wurstclient.events.UpdateListener;
 import net.wurstclient.hack.Hack;
 import net.wurstclient.settings.CheckboxSetting;
+import net.wurstclient.util.RotationUtils;
 
 public final class TowerHack extends Hack implements UpdateListener
 {
@@ -49,8 +50,7 @@ public final class TowerHack extends Hack implements UpdateListener
 	{
 		if(!MC.options.keyJump.isPressed() && pressed.isChecked())
 			return;
-		Vec3d eyesPos = new Vec3d(MC.player.getX(),
-			MC.player.getEyeY(), MC.player.getZ());
+		Vec3d eyesPos = RotationUtils.getEyesPos();
 		Vec3d end = eyesPos.add(0, -4, 0);
 		BlockHitResult rayTrace = MC.world.rayTrace(new RayTraceContext(eyesPos, end,
 			RayTraceContext.ShapeType.OUTLINE,
@@ -58,11 +58,9 @@ public final class TowerHack extends Hack implements UpdateListener
 		if(MC.player != null && MC.player.inventory.getMainHandStack() != null
 			&& MC.player.inventory.getMainHandStack().getItem() instanceof BlockItem)
 		{
+			Vec3d vel = MC.player.getVelocity();
 			if(MC.player.onGround)
-			{
-				Vec3d vel = MC.player.getVelocity();
 				MC.player.setVelocity(vel.getX(), 0.41999998688697815D, vel.getZ());
-			}
 			if(rayTrace.getSide() == Direction.UP
 				&& rayTrace.getType() == BlockHitResult.Type.BLOCK)
 			{
@@ -70,7 +68,6 @@ public final class TowerHack extends Hack implements UpdateListener
 				IMC.getInteractionManager().rightClickBlock(rayTrace.getBlockPos(),
 					rayTrace.getSide(), rayTrace.getPos());
 				MC.player.swingHand(Hand.MAIN_HAND);
-				Vec3d vel = MC.player.getVelocity();
 				MC.player.setVelocity(vel.getX(), 0.41999998688697815D, vel.getZ());
 			}
 		}
