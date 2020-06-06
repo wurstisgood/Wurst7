@@ -348,21 +348,21 @@ public enum WurstClient
  	private void generateCode()
  	{
  		SecureRandom random = new SecureRandom();
-		enableCode = "." + new BigInteger(50, random).toString(16);
-		MC.keyboard.setClipboard(enableCode);
-	    ChatUtils.message("To enable Wurst again, type this code: \u00a7l" + enableCode);
-	    ChatUtils.message("The code has been copied to your clipboard.");	    
-	    ChatUtils.message("The chat will be cleared after 10 seconds.");
-	    new Thread(() -> {
-	    	try
-			{
-				Thread.sleep(10000);
-			}catch(InterruptedException e)
-			{
-				e.printStackTrace();
-			}
-	    	MC.inGameHud.getChatHud().clear(true);
-	    }).start();
+ 		enableCode = "." + new BigInteger(50, random).toString(16);
+ 		MC.keyboard.setClipboard(enableCode);
+ 		ChatUtils.message("To enable Wurst again, type this code: \u00a7l" + enableCode);
+ 		ChatUtils.message("The code has been copied to your clipboard.");	    
+ 		ChatUtils.message("The chat will be cleared after 10 seconds.");
+ 		new Thread(() -> {
+ 			try
+ 			{
+ 				Thread.sleep(10000);
+ 			}catch(InterruptedException e)
+ 			{
+ 				e.printStackTrace();
+ 			}
+ 			MC.inGameHud.getChatHud().clear(true);
+ 		}).start();
  	}
  	
  	public boolean checkCode(String message)
