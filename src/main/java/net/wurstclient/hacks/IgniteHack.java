@@ -132,7 +132,6 @@ public final class IgniteHack extends Hack implements UpdateListener, PostMotion
 	@Override
 	public void onUpdate()
 	{
-		timer = System.currentTimeMillis();
 		int slot = findFlintAndSteel();
 		if(slot > -1)
 		{
