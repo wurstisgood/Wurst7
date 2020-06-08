@@ -17,6 +17,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.InvalidIdentifierException;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
@@ -100,5 +102,34 @@ public enum BlockUtils
 					blocks.add(new BlockPos(x, y, z));
 				
 		return blocks;
+	}
+
+	public static boolean faceBlockSimple(BlockPos pos)
+	{
+		Vec3d eyesPos = RotationUtils.getEyesPos();
+		Vec3d posVec = new Vec3d(pos).add(0.5, 0.5, 0.5);
+		double distanceSqPosVec = eyesPos.squaredDistanceTo(posVec);
+		
+		for(Direction side : Direction.values())
+		{
+			Vec3d hitVec =
+				posVec.add(new Vec3d(side.getVector()).multiply(0.5));
+			double distanceSqHitVec = eyesPos.squaredDistanceTo(hitVec);
+			
+			// check if hitVec is within range (6 blocks)
+			if(distanceSqHitVec > 36)
+				continue;
+			
+			// check if side is facing towards player
+			if(distanceSqHitVec >= distanceSqPosVec)
+				continue;
+			
+			// face block
+			WurstClient.INSTANCE.getRotationFaker().faceVectorPacket(hitVec);
+			
+			return true;
+		}
+		
+		return false;
 	}
 }
