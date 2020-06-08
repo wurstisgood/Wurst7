@@ -46,6 +46,7 @@
     "ScreenMixin",
     "ServerListMixin",
     "SignEditScreenMixin",
+    "SlimeBlockMixin",
     "StatsScreenMixin",
     "StatusEffectInstanceMixin",
     "SwordItemMixin",
