@@ -123,6 +123,7 @@ public final class HackList implements UpdateListener
 	public final OverlayHack overlayHack = new OverlayHack();
 	public final PanicHack panicHack = new PanicHack();
 	public final ParkourHack parkourHack = new ParkourHack();
+	public final PingSpoofHack pingSpoofHack = new PingSpoofHack();
 	public final PlayerEspHack playerEspHack = new PlayerEspHack();
 	public final PlayerFinderHack playerFinderHack = new PlayerFinderHack();
 	public final PotionSaverHack potionSaverHack = new PotionSaverHack();

@@ -17,14 +17,19 @@ import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.c2s.play.KeepAliveC2SPacket;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.text.Text;
 import net.wurstclient.WurstClient;
 import net.wurstclient.events.PacketOutputListener.PacketOutputEvent;
+import net.wurstclient.hacks.PingSpoofHack;
+import net.wurstclient.util.MathUtils;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public class ClientPlayNetworkHandlerMixin implements ClientPlayPacketListener
 {
+    private int ticks;
+    
 	@Inject(at = {@At("HEAD")},
 		method = {"sendPacket(Lnet/minecraft/network/Packet;)V"},
 		cancellable = true)
@@ -35,6 +40,48 @@ public class ClientPlayNetworkHandlerMixin implements ClientPlayPacketListener
 		
 		if(event.isCancelled())
 			ci.cancel();
+	}
+	
+	@Inject(at = {@At("HEAD")},
+		method = {"onKeepAlive(Lnet/minecraft/network/packet/s2c/play/KeepAliveS2CPacket;)V"},
+		cancellable = true)
+	private void delayPing(KeepAliveS2CPacket packet, CallbackInfo ci)
+	{
+		PingSpoofHack pingSpoofHack = WurstClient.INSTANCE.getHax().pingSpoofHack;
+		if(pingSpoofHack.shouldDelayPingPacket())
+    	{
+    		new Thread()
+    		{
+    			@Override
+    			public void run()
+    			{
+    				//Setting it to 100MS gives you about 80 ping
+    				//Setting it to 1800MS gives you about 1300-1700 ping
+    				ticks++;
+    				int limit = MathUtils.randomInt(6, 10, true);
+    				try 
+    				{
+    					if(ticks < limit || !pingSpoofHack.random.isChecked())
+    						Thread.sleep(MathUtils.randomInt(pingSpoofHack.delay.getValueI() - 100,
+    								pingSpoofHack.delay.getValueI() + 100, true));
+    					else
+    					{
+    						int random2 = MathUtils.randomInt(0, 100, true);
+    						int random3 = MathUtils.randomInt(200, 500, true);
+    						Thread.sleep(Math.min(random2, Math.abs(MathUtils.randomInt(
+    								pingSpoofHack.delay.getValueI() - 100, pingSpoofHack.delay.getValueI() 
+    								+ 100, true) - random3)));
+    						ticks = 0;
+    					}
+    				}catch(InterruptedException e) 
+    				{
+    					
+    				}
+    				getConnection().send(new KeepAliveC2SPacket(packet.getId()));
+    			}
+    		}.start();
+    		ci.cancel();
+    	}
 	}
 	
 	@Shadow

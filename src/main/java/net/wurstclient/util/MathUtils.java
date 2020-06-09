@@ -51,4 +51,9 @@ public enum MathUtils
 	{
 		return num < min ? min : num > max ? max : num;
 	}
+	
+	public static int randomInt(int min, int max, boolean inclusive)
+	{
+		return min + (int)(Math.random() * (max - min + (inclusive ? 1 : 0)));
+	}
 }
