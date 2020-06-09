@@ -48,7 +48,7 @@ public class ClientPlayNetworkHandlerMixin implements ClientPlayPacketListener
 	private void delayPing(KeepAliveS2CPacket packet, CallbackInfo ci)
 	{
 		PingSpoofHack pingSpoofHack = WurstClient.INSTANCE.getHax().pingSpoofHack;
-		if(pingSpoofHack.shouldDelayPingPacket())
+		if(pingSpoofHack.isEnabled())
     	{
     		new Thread()
     		{
