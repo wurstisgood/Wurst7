@@ -29,7 +29,7 @@ public final class VehicleHack extends Hack implements UpdateListener
 	private final CheckboxSetting control =
 		new CheckboxSetting("Always Allow Steering of Animals", true);
 	private final CheckboxSetting fly =
-		new CheckboxSetting("Enable Flight when Riding Boat", false);
+		new CheckboxSetting("Enable Flight when Riding", false);
 	private final CheckboxSetting swim =
 		new CheckboxSetting("Prevent Forced Dismounting When Swimming", false);
 	private final CheckboxSetting speed =
@@ -77,7 +77,7 @@ public final class VehicleHack extends Hack implements UpdateListener
 			riding.setVelocity(vel.getX(), 0, vel.getZ());
 			if(MC.options.keyJump.isPressed())
 				riding.setVelocity(vel.getX(), 0.3, vel.getZ());
-			if(MC.options.keyBack.isPressed())
+			else if(MC.options.keyBack.isPressed())
 				riding.setVelocity(vel.getX(), -0.3, vel.getZ());
 		}
 		vel = riding.getVelocity();
