@@ -21,7 +21,7 @@ import net.wurstclient.WurstClient;
 @Mixin(PigEntity.class)
 public class PigEntityMixin
 {
-	@Inject(at = {@At("HEAD")}, method = {"isSaddled()Z"},
+	@Inject(at = {@At("HEAD")}, method = {"canBeControlledByRider()Z"},
 		cancellable = true)
 	private void controlEntity(CallbackInfoReturnable<Boolean> ci)
 	{

@@ -18,7 +18,7 @@ import net.wurstclient.WurstClient;
 @Mixin(HorseBaseEntity.class)
 public class HorseBaseEntityMixin
 {
-	@Inject(at = {@At("HEAD")}, method = {"canBeControlledByRider()Z"},
+	@Inject(at = {@At("HEAD")}, method = {"isSaddled()Z"},
 		cancellable = true)
 	private void controlEntity(CallbackInfoReturnable<Boolean> ci)
 	{
