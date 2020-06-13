@@ -1,12 +1,16 @@
 package net.wurstclient.hacks;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.item.*;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RayTraceContext;
 import net.wurstclient.Category;
@@ -20,6 +24,8 @@ import net.wurstclient.util.RotationUtils;
 	"arrow trajectories"})
 public final class TrajectoriesHack extends Hack implements RenderListener
 {
+	private Entity landingEntity;
+	
 	public TrajectoriesHack()
 	{
 		super("Trajectories",
@@ -62,7 +68,10 @@ public final class TrajectoriesHack extends Hack implements RenderListener
 		if(!path.isEmpty())
 		{
 			Vec3d end = path.get(path.size() - 1);
-			drawEndOfLine(end, camPos);
+			if(landingEntity == null)
+				drawEndOfLine(end, camPos);
+			else
+				drawEntityBox(landingEntity, camPos, partialTicks);
 		}
 		
 		GL11.glColor4f(1, 1, 1, 1);
@@ -86,6 +95,43 @@ public final class TrajectoriesHack extends Hack implements RenderListener
 		GL11.glEnd();
 	}
 	
+	private void drawEntityBox(Entity entity, Vec3d camPos, float partialTicks)
+	{
+		// GL settings
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		GL11.glEnable(GL11.GL_LINE_SMOOTH);
+		GL11.glLineWidth(2);
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
+		
+		GL11.glPushMatrix();
+		Box box = new Box(-0.5, 0, -0.5, 0.5, 1, 0.5);
+		
+		GL11.glColor4f(1, 0, 0, 0.2F);
+		
+		// set position
+		GL11.glTranslated(-camPos.getX() + landingEntity.getX(),
+			-camPos.getY() + landingEntity.getY(),
+			-camPos.getZ() + landingEntity.getZ());
+		
+		// set size
+		double boxWidth = landingEntity.getWidth() + 0.1;
+		double boxHeight = landingEntity.getHeight() + 0.1;
+		GL11.glScaled(boxWidth, boxHeight, boxWidth);
+		
+		// draw box
+		RenderUtils.drawSolidBox(box);
+		
+		GL11.glPopMatrix();
+		
+		// GL resets
+		GL11.glEnable(GL11.GL_DEPTH_TEST);
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		GL11.glDisable(GL11.GL_BLEND);
+		GL11.glDisable(GL11.GL_LINE_SMOOTH);
+	}
+	
 	private void drawEndOfLine(Vec3d end, Vec3d camPos)
 	{
 		double renderX = end.x - camPos.x;
@@ -106,6 +152,7 @@ public final class TrajectoriesHack extends Hack implements RenderListener
 	
 	private ArrayList<Vec3d> getPath(float partialTicks)
 	{
+		landingEntity = null;
 		ClientPlayerEntity player = MC.player;
 		ArrayList<Vec3d> path = new ArrayList<>();
 		
@@ -193,11 +240,36 @@ public final class TrajectoriesHack extends Hack implements RenderListener
 			// apply gravity
 			arrowMotionY -= gravity * 0.1;
 			
-			// check for collision
+			boolean hasLanded = false;
+			
+			Vec3d present = new Vec3d(arrowPosX, arrowPosY, arrowPosZ);
+
 			RayTraceContext context = new RayTraceContext(eyesPos, arrowPos,
 				RayTraceContext.ShapeType.COLLIDER,
 				RayTraceContext.FluidHandling.NONE, MC.player);
 			if(MC.world.rayTrace(context).getType() != HitResult.Type.MISS)
+				hasLanded = true;
+
+			float itemBB = stack.getItem() instanceof RangedWeaponItem ? 0.3F : 0.25F;
+			Box arrowBox = new Box(arrowPos.getX() - itemBB, arrowPos.getY() - itemBB,
+				arrowPos.getZ() - itemBB, arrowPos.getX() + itemBB, arrowPos.getY() + itemBB, arrowPos.getZ() + itemBB);
+			List<Entity> entities = MC.world.getEntities(MC.player, arrowBox.expand(
+				arrowMotionX * 0.1, arrowMotionY * 0.1, arrowMotionZ * 0.1).expand(1.0D, 1.0D, 1.0D),
+				(e) -> !e.isSpectator() && e.isAlive() && e.collides());
+			
+			for(Entity entity : entities) 
+			{
+				float expand = 0.3F;
+				Box entityBB = entity.getBoundingBox().expand(expand);
+				Optional<Vec3d> optional = entityBB.rayTrace(arrowPos, present);
+				if(optional.isPresent())
+				{
+					landingEntity = entity;
+					hasLanded = true;
+				}
+			}
+			
+			if(hasLanded)
 				break;
 		}
 		
