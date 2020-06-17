@@ -91,43 +91,43 @@ public final class HealthTagsHack extends Hack implements RenderListener
 		double dist = manager.getSquaredDistanceToCamera(entity);
 		if(dist <= (limit * limit))
 		{
-		    TextRenderer font = MC.textRenderer;
-		    int width = font.getStringWidth(tag);
-		    GL11.glPushMatrix();
-		    GL11.glDepthMask(false);
-		    GL11.glDisable(GL11.GL_DEPTH_TEST);
-		    GL11.glDisable(GL11.GL_ALPHA_TEST);
-		    GL11.glEnable(GL11.GL_BLEND);
-		    GL11.glDisable(GL11.GL_TEXTURE_2D);
-		    GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);   
-		    GL11.glEnable(GL11.GL_LINE_SMOOTH);
-		    GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
-		    GL11.glLineWidth(1.0F);
-		    RenderUtils.applyCameraRotationOnly();
-		    Vec3d camPos = RenderUtils.getCameraPos();
-		    GL11.glTranslated(
-		    	-camPos.x + entity.prevX
-		    	+ (entity.getX() - entity.prevX) * partialTicks,
-		    	-camPos.y + entity.prevY
-		    	+ (entity.getY() - entity.prevY) * partialTicks + entity.getHeight() + height,
-		    	-camPos.z + entity.prevZ
-		    	+ (entity.getZ() - entity.prevZ) * partialTicks);
-		    GL11.glNormal3f(0.0F, 1.0F, 0.0F);
+			TextRenderer font = MC.textRenderer;
+			int width = font.getStringWidth(tag);
+			GL11.glPushMatrix();
+			GL11.glDepthMask(false);
+			GL11.glDisable(GL11.GL_DEPTH_TEST);
+			GL11.glDisable(GL11.GL_ALPHA_TEST);
+			GL11.glEnable(GL11.GL_BLEND);
+			GL11.glDisable(GL11.GL_TEXTURE_2D);
+			GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);   
+			GL11.glEnable(GL11.GL_LINE_SMOOTH);
+			GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
+			GL11.glLineWidth(1.0F);
+			RenderUtils.applyCameraRotationOnly();
+			Vec3d camPos = RenderUtils.getCameraPos();
+			GL11.glTranslated(
+				-camPos.x + entity.prevX
+				+ (entity.getX() - entity.prevX) * partialTicks,
+				-camPos.y + entity.prevY
+				+ (entity.getY() - entity.prevY) * partialTicks + entity.getHeight() + height,
+				-camPos.z + entity.prevZ
+				+ (entity.getZ() - entity.prevZ) * partialTicks);
+			GL11.glNormal3f(0.0F, 1.0F, 0.0F);
 			boolean nameTagsActive =
 				WURST.getHax().nameTagsHack.isEnabled();
-		    float scale =
+			float scale =
 				(float)(0.016666668F
-				* 1.6F
-				* (entity.distanceTo(MC.getCameraEntity()) > 10
-					&& nameTagsActive
-					? entity.distanceTo(MC.getCameraEntity()) / 10
-					: 1));
+					* 1.6F
+					* (entity.distanceTo(MC.getCameraEntity()) > 10
+						&& nameTagsActive
+						? entity.distanceTo(MC.getCameraEntity()) / 10
+							: 1));
 			scale *=
 				(nameTagsActive
 					? (entity.getBoundingBox().getAverageSideLength() > -50
 						? 1
-						: entity.distanceTo(MC.getCameraEntity()) / 300)
-					: 1);
+							: entity.distanceTo(MC.getCameraEntity()) / 300)
+						: 1);
 			GL11.glScaled(-scale, -scale, scale);
 			Camera camera = BlockEntityRenderDispatcher.INSTANCE.camera;
 			GL11.glRotated(MathHelper.wrapDegrees(camera.getYaw()), 0, 1,
@@ -146,15 +146,15 @@ public final class HealthTagsHack extends Hack implements RenderListener
 			VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
 			font.draw(tag, -width / 2, 0, color, false, Rotation3.identity().getMatrix(), immediate, true, 0, 15728880);
 			immediate.draw();
-		    GL11.glDisable(GL11.GL_TEXTURE_2D);
-		    GL11.glDepthMask(true);
-		    GL11.glEnable(GL11.GL_DEPTH_TEST);
-		    GL11.glEnable(GL11.GL_TEXTURE_2D);
-		    GL11.glDisable(GL11.GL_BLEND);
-		    GL11.glEnable(GL11.GL_ALPHA_TEST);
-		    GL11.glDisable(GL11.GL_LINE_SMOOTH);
-		    GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-		    GL11.glPopMatrix();
+			GL11.glDisable(GL11.GL_TEXTURE_2D);
+			GL11.glDepthMask(true);
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
+			GL11.glEnable(GL11.GL_TEXTURE_2D);
+			GL11.glDisable(GL11.GL_BLEND);
+			GL11.glEnable(GL11.GL_ALPHA_TEST);
+			GL11.glDisable(GL11.GL_LINE_SMOOTH);
+			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+			GL11.glPopMatrix();
 		}
 	}
 	
