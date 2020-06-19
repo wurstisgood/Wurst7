@@ -7,7 +7,11 @@
  */
 package net.wurstclient.mixinterface;
 
+import net.minecraft.client.util.InputUtil;
+
 public interface IKeyBinding
 {
 	public boolean isActallyPressed();
+	
+	public InputUtil.KeyCode getKeyCode();
 }

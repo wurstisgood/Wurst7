@@ -28,4 +28,10 @@ public class KeyBindingMixin implements IKeyBinding
 		int code = keyCode.getKeyCode();
 		return InputUtil.isKeyPressed(handle, code);
 	}
+
+	@Override
+	public InputUtil.KeyCode getKeyCode()
+	{
+		return keyCode;
+	}
 }
