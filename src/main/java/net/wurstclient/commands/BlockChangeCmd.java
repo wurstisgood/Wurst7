@@ -10,6 +10,7 @@ package net.wurstclient.commands;
 import net.wurstclient.command.CmdException;
 import net.wurstclient.command.CmdSyntaxError;
 import net.wurstclient.command.Command;
+import net.wurstclient.util.ChatUtils;
 
 public final class BlockChangeCmd extends Command
 {
@@ -18,15 +19,17 @@ public final class BlockChangeCmd extends Command
 	public BlockChangeCmd()
 	{
 		super("blockchange", "Clears the BlockChange blocks.",
-			"[clear]");
+			"[<clear>]");
 	}	
 	
 	@Override
 	public void call(String[] args) throws CmdException
 	{
 		if(args.length == 1 && args[0].equalsIgnoreCase("clear"))
+		{
 			clearBlocks = true;
-		else
+			ChatUtils.message("BlockChange blocks cleared.");
+		}else
 			throw new CmdSyntaxError();
 	}
 }
