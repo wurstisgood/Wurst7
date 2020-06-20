@@ -76,6 +76,11 @@ public final class BlockChangeEspHack extends Hack implements RenderListener, Pa
 			}else if(matchingBlocks.size() < maxBlocks)
 				notify = true;
 		}
+		if(WURST.getCmds().blockChangeCmd.clearBlocks)
+		{
+			matchingBlocks.clear();
+			WURST.getCmds().blockChangeCmd.clearBlocks = false;
+		}
 		if(clearAfterDelay.isChecked() && System.currentTimeMillis() >= time + 15000)
 		{
 			matchingBlocks.clear();
