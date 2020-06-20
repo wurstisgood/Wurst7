@@ -29,6 +29,7 @@
     "DisconnectedScreenMixin",
     "EntityMixin",
     "EntityRendererMixin",
+    "FireworkParticleMixin",
     "GameMenuScreenMixin",
     "GameRendererMixin",
     "IngameHudMixin",
