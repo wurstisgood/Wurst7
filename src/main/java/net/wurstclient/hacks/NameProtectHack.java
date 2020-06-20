@@ -12,14 +12,25 @@ import net.minecraft.client.network.PlayerListEntry;
 import net.wurstclient.Category;
 import net.wurstclient.SearchTags;
 import net.wurstclient.hack.Hack;
+import net.wurstclient.settings.CheckboxSetting;
 
 @SearchTags({"name protect"})
 public final class NameProtectHack extends Hack
 {
+	private final CheckboxSetting own = new CheckboxSetting(
+		"Hide Own Player Name", true);
+	private final CheckboxSetting others = new CheckboxSetting(
+		"Hide Other Players' Names", true);
+	public String replaceName = "\u00a7oMe\u00a7r";
+	
 	public NameProtectHack()
 	{
-		super("NameProtect", "Hides all player names.");
+		super("NameProtect",
+			"Hides all player names.\n"
+				+ "You can choose your custom name by using .nameprotect.");
 		setCategory(Category.RENDER);
+		addSetting(own);
+		addSetting(others);
 	}
 	
 	public String protect(String string)
@@ -29,7 +40,13 @@ public final class NameProtectHack extends Hack
 		
 		String me = MC.getSession().getUsername();
 		if(string.contains(me))
-			return string.replace(me, "\u00a7oMe\u00a7r");
+			if(own.isChecked())
+				return string.replace(me, replaceName);
+			else
+				return string;
+		
+		if(!others.isChecked())
+			return string;
 		
 		int i = 0;
 		for(PlayerListEntry info : MC.player.networkHandler.getPlayerList())
