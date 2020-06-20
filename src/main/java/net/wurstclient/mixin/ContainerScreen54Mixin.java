@@ -22,11 +22,13 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
 import net.wurstclient.WurstClient;
 import net.wurstclient.hacks.AutoStealHack;
+import net.wurstclient.hacks.AutoStealHack.Mode;
+import net.wurstclient.mixinterface.IContainer;
 
 @Mixin(GenericContainerScreen.class)
 public abstract class ContainerScreen54Mixin
 	extends ContainerScreen<GenericContainer>
-	implements ContainerProvider<GenericContainer>
+	implements ContainerProvider<GenericContainer>, IContainer
 {
 	@Shadow
 	@Final
@@ -51,16 +53,50 @@ public abstract class ContainerScreen54Mixin
 			return;
 		
 		if(autoSteal.areButtonsVisible())
-		{
-			addButton(new ButtonWidget(x + containerWidth - 108, y + 4, 50, 12,
-				"Steal", b -> steal()));
-			
-			addButton(new ButtonWidget(x + containerWidth - 56, y + 4, 50, 12,
-				"Store", b -> store()));
-		}
+			if(!autoSteal.isDropButtonVisible())
+ 			{
+				addButton(new ButtonWidget(x + containerWidth - 108, y + 4, 50, 12,
+					"Steal", b -> steal()));
+				
+				addButton(new ButtonWidget(x + containerWidth - 56, y + 4, 50, 12,
+					"Store", b -> store()));
+ 			}else
+ 			{
+ 				addButton(new ButtonWidget(x + containerWidth - 113, y + 4, 35, 12,
+					"Steal", b -> steal()));
+				
+ 				addButton(new ButtonWidget(x + containerWidth - 76, y + 4, 35, 12,
+					"Store", b -> store()));
+ 				
+				addButton(new ButtonWidget(x + containerWidth - 39, y + 4, 35, 12,
+					"Drop", b -> drop()));
+ 			}
 		
-		if(autoSteal.isEnabled())
-			steal();
+		if(autoSteal.isEnabled() && !autoSteal.isAutoOpen())
+ 			if(autoSteal.mode.getSelected() == Mode.STEAL)
+ 				steal();
+ 			else
+ 				drop();
+	}
+	
+	@Override
+	public void stealFast()
+	{
+		for(int i = 0; i < rows * 9; i++)
+		{
+			Slot slot = container.slots.get(i);
+			if(slot.getStack().isEmpty())
+				continue;
+			if(minecraft.currentScreen == null)
+				break;
+			if(autoSteal.mode.getSelected() == Mode.STEAL)
+				onMouseClick(slot, slot.id, 0, SlotActionType.QUICK_MOVE);
+			else
+			{
+				onMouseClick(slot, slot.id, 0, SlotActionType.PICKUP);
+				onMouseClick(null, -999, 0, SlotActionType.PICKUP);
+			}
+		}
 	}
 	
 	private void steal()
@@ -70,7 +106,12 @@ public abstract class ContainerScreen54Mixin
 	
 	private void store()
 	{
-		runInThread(() -> shiftClickSlots(rows * 9, rows * 9 + 44, 2));
+		runInThread(() -> shiftClickSlots(rows * 9, rows * 9 + 36, 2));
+	}
+	
+	private void drop()
+	{
+		runInThread(() -> shiftClickSlots(0, 3 * 9, 3));
 	}
 	
 	private void runInThread(Runnable r)
@@ -101,7 +142,12 @@ public abstract class ContainerScreen54Mixin
 			if(this.mode != mode || minecraft.currentScreen == null)
 				break;
 			
-			onMouseClick(slot, slot.id, 0, SlotActionType.QUICK_MOVE);
+			if(mode == 3)
+			{
+				onMouseClick(slot, slot.id, 0, SlotActionType.PICKUP);
+				onMouseClick(null, -999, 0, SlotActionType.PICKUP);
+			}else
+				onMouseClick(slot, slot.id, 0, SlotActionType.QUICK_MOVE);
 		}
 	}
 	
