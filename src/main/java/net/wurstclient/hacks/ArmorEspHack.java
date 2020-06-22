@@ -66,12 +66,12 @@ public final class ArmorEspHack extends Hack implements RenderListener
 	@Override
 	public void onRender(float partialTicks)
 	{
-		for(Entity entity : MC.world.getEntities())
-			if(entity instanceof AbstractClientPlayerEntity && entity != MC.player)
+		for(AbstractClientPlayerEntity entity : MC.world.getPlayers())
+			if(entity != MC.player)
 			{
 				for(int i = 0; i < 6; i++)
-					if((!getArmorItem(i, (AbstractClientPlayerEntity)entity).isEmpty()))
-						renderArmor(entity, getArmorItem(i, (AbstractClientPlayerEntity)entity),
+					if((!getArmorItem(i, entity).isEmpty()))
+						renderArmor(entity, getArmorItem(i, entity),
 							0.75, true, 75, i, showEnchants.isChecked(), showRel.isChecked(), partialTicks);
 			}
 	}
