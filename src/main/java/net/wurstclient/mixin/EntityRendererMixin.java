@@ -95,7 +95,7 @@ public abstract class EntityRendererMixin<T extends Entity>
 		
 		if(bl)
 			textRenderer.draw(string, h, j, -1, false, matrix4f,
-				vertexConsumerProvider, false, 0, i);
+				vertexConsumerProvider, nameTagsHack.isEnabled() ? true : false, 0, i);
 		
 		matrixStack.pop();
 	}
