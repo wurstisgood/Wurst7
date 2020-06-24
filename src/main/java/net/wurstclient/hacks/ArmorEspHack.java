@@ -12,15 +12,16 @@ import java.util.Map.Entry;
 import org.lwjgl.opengl.GL11;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
+import net.minecraft.client.util.math.Rotation3;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
@@ -30,18 +31,19 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.wurstclient.Category;
 import net.wurstclient.SearchTags;
-import net.wurstclient.events.RenderListener;
 import net.wurstclient.hack.Hack;
 import net.wurstclient.settings.CheckboxSetting;
 import net.wurstclient.util.RenderUtils;
 
 @SearchTags({"armor esp"})
-public final class ArmorEspHack extends Hack implements RenderListener
+public final class ArmorEspHack extends Hack
 {
 	public final CheckboxSetting showEnchants = new CheckboxSetting(
 		"Show Enchantments", false);
 	public final CheckboxSetting showRel = new CheckboxSetting(
 		"Only Show Relevant Enchantments", true);
+	
+	public boolean enableBrightness;
 	
 	public ArmorEspHack()
 	{
@@ -50,30 +52,17 @@ public final class ArmorEspHack extends Hack implements RenderListener
 		addSetting(showEnchants);
 		addSetting(showRel);
 	}
-
-	@Override
-	public void onEnable()
-	{
-		EVENTS.add(RenderListener.class, this);
-	}
 	
-	@Override
-	public void onDisable()
+	public void renderArmor(float partialTicks)
 	{
-		EVENTS.remove(RenderListener.class, this);
-	}
-	
-	@Override
-	public void onRender(float partialTicks)
-	{
+		if(!isEnabled())
+			return;
 		for(AbstractClientPlayerEntity entity : MC.world.getPlayers())
 			if(entity != MC.player)
-			{
 				for(int i = 0; i < 6; i++)
-					if((!getArmorItem(i, entity).isEmpty()))
+					if(!getArmorItem(i, entity).isEmpty())
 						renderArmor(entity, getArmorItem(i, entity),
 							0.75, true, 75, i, showEnchants.isChecked(), showRel.isChecked(), partialTicks);
-			}
 	}
 	
 	private ItemStack getArmorItem(int id, AbstractClientPlayerEntity entity)
@@ -122,15 +111,17 @@ public final class ArmorEspHack extends Hack implements RenderListener
 				0);
 			GL11.glRotated(MathHelper.wrapDegrees(-camera.getPitch()), 1, 0,
 				0);
-		    GlStateManager.enableRescaleNormal();
+			GlStateManager.enableRescaleNormal();
 		  	GlStateManager.enableBlend();
 		  	GlStateManager.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, 
 		  		GL11.GL_NONE);
 		  	DiffuseLighting.enable();
 			if(depth)
 		  		GlStateManager.disableDepthTest();
+			enableBrightness = true;
 			MC.getItemRenderer().zOffset = -147F;
 			MC.getItemRenderer().renderGuiItem(item, -50 + armorId * 20, -20);
+			enableBrightness = false;
 			if(item.isDamaged())
 			{
 			    int damage = (int)Math.round(13.0D - item.getDamage() * 13.0D / item.getMaxDamage());
@@ -177,10 +168,12 @@ public final class ArmorEspHack extends Hack implements RenderListener
 	                if(showRel && !entry.getKey().type.isAcceptableItem(item.getItem()))
 	                	continue;
 	                index++;
-	                MC.textRenderer.drawWithShadow(getShortName(entry.getKey())
+	                VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+	                MC.textRenderer.draw(getShortName(entry.getKey())
 	                	+ entry.getValue(), -95 + armorId * 40 - 
 			    		MC.textRenderer.getStringWidth(getShortName(entry.getKey()) + entry.getValue()), 
-			    		-60 + MC.textRenderer.fontHeight * index, 16777215);
+			    		-60 + MC.textRenderer.fontHeight * index, 16777215, true, Rotation3.identity().getMatrix(), immediate, true, 0, 15728880);
+	                immediate.draw();
 	            }
 		    	if(depth)
 		    		GlStateManager.enableDepthTest();
