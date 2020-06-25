@@ -7,18 +7,23 @@
  */
 package net.wurstclient.hacks;
 
-import java.util.AbstractMap;
-import java.util.Map.Entry;
-import net.minecraft.block.AirBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
+import java.util.stream.Stream;
+
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.Entity;
+import net.minecraft.tag.FluidTags;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
 import net.wurstclient.Category;
 import net.wurstclient.events.UpdateListener;
 import net.wurstclient.hack.Hack;
 import net.wurstclient.settings.SliderSetting;
 import net.wurstclient.settings.SliderSetting.ValueDisplay;
-import net.wurstclient.util.BlockUtils;
 
 public final class FallDisconnectHack extends Hack implements UpdateListener
 {
@@ -53,35 +58,50 @@ public final class FallDisconnectHack extends Hack implements UpdateListener
 	@Override
 	public void onUpdate()
 	{
-		if(MC.isInSingleplayer() || MC.player.abilities.creativeMode)
+		ClientPlayerEntity player = MC.player;
+		if(MC.isInSingleplayer() || player.abilities.creativeMode)
 			return;
-		if(MC.player.fallDistance > fallDistance.getValueI())
+		if(player.fallDistance > fallDistance.getValueI())
 		{
-			Entry<Float, Block> result = getDistanceFromGround(new BlockPos(MC.player.getPos()), distGround.getValueI(), 1);
-			if(result.getKey() < 0)
-				return;
-			if(result.getValue() == Blocks.WATER)
-				return;
-			if(result.getKey() <= distGround.getValueF())
+			Vec3d motion = MC.player.getVelocity();
+			Stream<VoxelShape> collision =
+				MC.world.getCollisions(player,
+					player.getBoundingBox().expand(motion.getX(),
+						-distGround.getValue(), motion.getZ()), null);
+			double y = -distGround.getValue();
+			
+			y = VoxelShapes.calculateMaxOffset(Direction.Axis.Y, player.getBoundingBox(), collision, y);
+			
+			if(y != -distGround.getValue())
 			{
+				if(isInWater(player.getBoundingBox().contract(0.001D), player))
+					return;
 				MC.world.disconnect();
 				setEnabled(false);
 			}
 		}
 	}
-	
-	private Entry<Float, Block> getDistanceFromGround(BlockPos currentpos, float limit, float offset)
+
+	public boolean isInWater(Box bb, Entity entityIn)
 	{
-		for(float y = currentpos.getY(); y >= currentpos.getY() - limit; y -= offset)
-		{
-			BlockPos pos = new BlockPos(currentpos.getX(), y, currentpos.getZ());
-			if(pos != null)
-			{
-				Block block = BlockUtils.getBlock(pos);
-				if(!(block instanceof AirBlock))
-					return new AbstractMap.SimpleEntry<Float, Block>(currentpos.getY() - y, block);
-			}
-		}
-		return new AbstractMap.SimpleEntry<Float, Block>(-1F, null);
+		int xMin = MathHelper.floor(bb.x1);
+		int xMax = MathHelper.ceil(bb.x2);
+		int yMin = MathHelper.floor(bb.y1);
+		int yMax = MathHelper.ceil(bb.y2);
+		int zMin = MathHelper.floor(bb.z1);
+		int zMax = MathHelper.ceil(bb.z2);
+		
+		if(!MC.world.isRegionLoaded(xMin, yMin, zMin, xMax, yMax, zMax))
+			return false;
+		
+		for(int i = xMin; i < xMax; ++i)
+			for(int j = yMin; j < yMax; ++j)
+				for(int k = zMin; k < zMax; ++k)
+				{
+					BlockPos pos = new BlockPos(i, j, k);
+					if(MC.world.getFluidState(pos).matches(FluidTags.WATER))
+						return true;
+				}
+		return false;
 	}
 }
