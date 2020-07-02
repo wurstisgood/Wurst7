@@ -20,8 +20,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.WindowEventHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
+import net.minecraft.client.options.KeyBinding;
 import net.minecraft.client.util.Session;
 import net.minecraft.entity.Entity;
+import net.minecraft.item.ShieldItem;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.snooper.SnooperListener;
@@ -117,6 +119,26 @@ public abstract class MinecraftClientMixin
 			return session;
 	}
 	
+	@Redirect(at = @At(value = "INVOKE",
+		target = "Lnet/minecraft/client/options/KeyBinding;isPressed()Z",
+		ordinal = 2),
+		method = "handleInputEvents()V")
+	private boolean continueBlockHit(KeyBinding useKey)
+	{
+		boolean isOffhandShield = player.getActiveItem() != null 
+    		&& this.player.getActiveItem().getItem() instanceof ShieldItem
+    		&& WurstClient.INSTANCE.getHax().blockHitHack.isBlocking();
+		if(isOffhandShield)
+		{
+			// Allow attacks while using shield
+			while(((MinecraftClient)(Object)this).options.keyAttack.wasPressed())
+				doAttack();
+			// Prevent stopUsingItem() from being called
+			return true;
+		}
+		return useKey.isPressed();
+	}
+	
 	@Override
 	public void rightClick()
 	{
@@ -151,6 +173,12 @@ public abstract class MinecraftClientMixin
 	public void setSession(Session session)
 	{
 		wurstSession = session;
+	}
+	
+	@Shadow
+	private void doAttack()
+	{
+		
 	}
 	
 	@Shadow
