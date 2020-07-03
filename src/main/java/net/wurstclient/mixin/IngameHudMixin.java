@@ -44,4 +44,14 @@ public class IngameHudMixin extends DrawableHelper
 		if(WurstClient.INSTANCE.getHax().noPumpkinHack.isEnabled())
 			ci.cancel();
 	}
+	
+	@Inject(at = {@At("HEAD")},
+		method = {"renderStatusEffectOverlay(Lnet/minecraft/client/util/math/MatrixStack;)V"},
+		cancellable = true)
+	private void onRenderStatusEffectOverlay(CallbackInfo ci)
+	{
+		if(WurstClient.INSTANCE.getHax().hudHack.isEnabled()
+			&& WurstClient.INSTANCE.getHax().hudHack.shouldHidePotionHud())
+			ci.cancel();
+	}
 }
