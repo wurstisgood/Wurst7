@@ -18,7 +18,6 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.render.item.ItemRenderer;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -82,9 +81,9 @@ public class HUDElement
     		itemDamageW = WurstClient.MC.textRenderer.getWidth
     			(stripCtrl(itemDamage));
     		elementW = padW + iconW + padW + itemDamageW;
-    		itemName = I18n.translate(itemStack.getTranslationKey());
+    		itemName = itemStack.getName().getString();
     		elementW = padW + iconW + padW + Math.max(WurstClient.MC.textRenderer.getWidth(
-    				(stripCtrl(itemName))), itemDamageW);
+    			(stripCtrl(itemName))), itemDamageW);
     		itemNameW = WurstClient.MC.textRenderer.getWidth(stripCtrl(itemName));
  		}
  	}
