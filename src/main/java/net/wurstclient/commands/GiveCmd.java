@@ -30,9 +30,7 @@ import net.wurstclient.util.MathUtils;
 
 public final class GiveCmd extends Command
 {
-	private ItemTemplate[] getTemplates()
-	{
-		return new ItemTemplate[]{
+	private final ItemTemplate[] templates = new ItemTemplate[]{
 		new ItemTemplate("Knockback Stick", Items.STICK,
 			"{Enchantments:[{id:knockback, lvl:12}], display:{Name:'{\"text\":\"\u00a76Knockback Stick\"}'},"
 				+ "HideFlags:63}"),
@@ -269,7 +267,6 @@ public final class GiveCmd extends Command
 		new ItemTemplate("Creeper Nuke", Items.CREEPER_SPAWN_EGG,
 			"{display:{Name:'{\"text\":\"\u00a73Tekkit Nuke\"}'},"
 				+ "EntityTag:{ExplosionRadius:127,Fuse:-1,ignited:1}}")};
-	}
 	
 	public GiveCmd()
 	{
@@ -293,12 +290,9 @@ public final class GiveCmd extends Command
 		return nbt;
 	}
 	
-	private ItemTemplate templates[];
-	
 	@Override
 	public void call(String[] args) throws CmdException
 	{
-		templates = getTemplates();
 		// validate input
 		if(args.length < 1)
 			throw new CmdSyntaxError();
